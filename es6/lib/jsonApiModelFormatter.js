@@ -1,15 +1,25 @@
 import Model from "dovima";
+import {Collection} from "dovima";
 
-export default function JsonApiModelFormatter(model) {
+function convertModel(model) {
 	if(model instanceof Model) {
-		let attributes = model.attributes;
+		let attributes = model.toJSON();
+		const id = attributes.id;
 		delete attributes.id; //so it's just on the root
 		return {
 			type: model.constructor.name,
-			id: model.id,
+			id: id,
 			attributes: attributes
 		};
 	} else {
-		throw new Error(`The object provided to be formatted as json is not a model.`);
+		throw new Error(`The object provided to be formatted as json is not a dovima Model / Collection.`);
+	}
+}
+
+export default function JsonApiModelFormatter(models) {
+	if(Array.isArray(models) || (models instanceof Collection)) {
+		return models.map(convertModel);
+	} else {
+		return convertModel(models);
 	}
 }

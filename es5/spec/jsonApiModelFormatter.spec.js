@@ -16,7 +16,7 @@ var _dovima = require("dovima");
 
 var _dovima2 = _interopRequireDefault(_dovima);
 
-describe("JsonApiModelFormatter", function () {
+describe("jsonApiModelFormatter", function () {
 	var User = (function (_Model) {
 		function User() {
 			_classCallCheck(this, User);
@@ -51,9 +51,15 @@ describe("JsonApiModelFormatter", function () {
 		(0, _libJsonApiModelFormatterJs2["default"])(user).attributes.should.eql(jsonApiUserAttributes);
 	});
 
+	it("should support a model array", function () {
+		var jsonApiUserAttributes = userAttributes;
+		delete jsonApiUserAttributes.id;
+		(0, _libJsonApiModelFormatterJs2["default"])([user])[0].attributes.should.eql(jsonApiUserAttributes);
+	});
+
 	it("should throw an exception if the provided object is not an instance of Model", function () {
 		(function () {
 			(0, _libJsonApiModelFormatterJs2["default"])(userAttributes);
-		}).should["throw"]("The object provided to be formatted as json is not a model.");
+		}).should["throw"]("The object provided to be formatted as json is not a dovima Model / Collection.");
 	});
 });
