@@ -11,17 +11,26 @@ var _dovima = require("dovima");
 
 var _dovima2 = _interopRequireDefault(_dovima);
 
-function JsonApiModelFormatter(model) {
+function convertModel(model) {
 	if (model instanceof _dovima2["default"]) {
-		var attributes = model.attributes;
+		var attributes = model.toJSON();
+		var id = attributes.id;
 		delete attributes.id; //so it's just on the root
 		return {
 			type: model.constructor.name,
-			id: model.id,
+			id: id,
 			attributes: attributes
 		};
 	} else {
-		throw new Error("The object provided to be formatted as json is not a model.");
+		throw new Error("The object provided to be formatted as json is not a dovima Model / Collection.");
+	}
+}
+
+function JsonApiModelFormatter(models) {
+	if (Array.isArray(models) || models instanceof _dovima.Collection) {
+		return models.map(convertModel);
+	} else {
+		return convertModel(models);
 	}
 }
 
