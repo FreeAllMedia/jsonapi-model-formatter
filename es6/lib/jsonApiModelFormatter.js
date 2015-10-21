@@ -2,7 +2,7 @@ import Model from "dovima";
 import {Collection} from "dovima";
 
 function convertModel(model) {
-	if(model instanceof Model) {
+	if((model && typeof (model.toJSON) === "function") || model instanceof Model) {
 		let attributes = model.toJSON();
 		const id = attributes.id;
 		delete attributes.id; //so it's just on the root

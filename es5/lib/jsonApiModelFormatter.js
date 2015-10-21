@@ -12,7 +12,7 @@ var _dovima = require("dovima");
 var _dovima2 = _interopRequireDefault(_dovima);
 
 function convertModel(model) {
-	if (model instanceof _dovima2["default"]) {
+	if (model && typeof model.toJSON === "function" || model instanceof _dovima2["default"]) {
 		var attributes = model.toJSON();
 		var id = attributes.id;
 		delete attributes.id; //so it's just on the root
