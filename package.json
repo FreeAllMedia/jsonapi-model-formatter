@@ -1,6 +1,6 @@
 {
   "name": "jsonapi-model-formatter",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "JSON API formatter for dovima models.",
   "main": "index.js",
   "scripts": {
@@ -34,9 +34,6 @@
   },
   "homepage": "https://github.com/FreeAllMedia/jsonapi-model-formatter",
 	"dependencies": {
-    "dovima": "^0.3.0"
-  },
-	"peerDependencies": {
     "dovima": "^0.3.0"
   },
   "devDependencies": {
