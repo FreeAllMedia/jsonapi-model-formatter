@@ -37,4 +37,25 @@ describe("jsonApiModelFormatter", () => {
 			jsonApiModelFormatter(userAttributes);
 		}.should.throw("The object provided to be formatted as json is not a dovima Model / Collection.");
 	});
+
+	describe("function object conflicts", () => {
+		it("should work correctly if the object has a toJSON function", () => {
+			const result = "some result";
+			class Apple {
+				toJSON() {
+					return result;
+				}
+			}
+
+			const apple = new Apple();
+			jsonApiModelFormatter(apple).attributes.should.equal(result);
+		});
+
+		it("should work correctly with a unknown collection that extends the array", () => {
+			class Apples extends Array {}
+
+			const apples = new Apples();
+			jsonApiModelFormatter(apples).should.eql([]);
+		});
+	});
 });
