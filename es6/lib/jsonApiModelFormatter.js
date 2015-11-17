@@ -1,5 +1,5 @@
 import Model from "dovima";
-import {Collection} from "dovima";
+import inflect from "jargon";
 
 function convertModel(model) {
 	if((model && typeof (model.toJSON) === "function")
@@ -8,7 +8,7 @@ function convertModel(model) {
 		const id = attributes.id;
 		delete attributes.id; //so it's just on the root
 		return {
-			type: model.constructor.name,
+			type: inflect(model.constructor.name).camel.toString(),
 			id: id,
 			attributes: attributes
 		};

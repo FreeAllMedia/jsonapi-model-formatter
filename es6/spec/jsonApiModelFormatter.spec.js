@@ -13,7 +13,7 @@ describe("jsonApiModelFormatter", () => {
 	});
 
 	it("should add the model type to the root", () => {
-		jsonApiModelFormatter(user).type.should.equal("User");
+		jsonApiModelFormatter(user).type.should.equal("user");
 	});
 
 	it("should add the model id to the root", () => {
