@@ -40,7 +40,7 @@ describe("jsonApiModelFormatter", function () {
 	});
 
 	it("should add the model type to the root", function () {
-		(0, _libJsonApiModelFormatterJs2["default"])(user).type.should.equal("User");
+		(0, _libJsonApiModelFormatterJs2["default"])(user).type.should.equal("user");
 	});
 
 	it("should add the model id to the root", function () {

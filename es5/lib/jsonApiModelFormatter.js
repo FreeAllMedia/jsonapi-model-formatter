@@ -11,13 +11,17 @@ var _dovima = require("dovima");
 
 var _dovima2 = _interopRequireDefault(_dovima);
 
+var _jargon = require("jargon");
+
+var _jargon2 = _interopRequireDefault(_jargon);
+
 function convertModel(model) {
 	if (model && typeof model.toJSON === "function" || model instanceof _dovima2["default"]) {
 		var attributes = model.toJSON();
 		var id = attributes.id;
 		delete attributes.id; //so it's just on the root
 		return {
-			type: model.constructor.name,
+			type: (0, _jargon2["default"])(model.constructor.name).camel.toString(),
 			id: id,
 			attributes: attributes
 		};
