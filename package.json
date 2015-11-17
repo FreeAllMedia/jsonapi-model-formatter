@@ -1,6 +1,6 @@
 {
   "name": "jsonapi-model-formatter",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "JSON API formatter for dovima models.",
   "main": "index.js",
   "scripts": {
