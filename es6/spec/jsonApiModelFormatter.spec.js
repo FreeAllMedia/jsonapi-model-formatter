@@ -2,7 +2,20 @@ import jsonApiModelFormatter from "../lib/jsonApiModelFormatter.js";
 import Model from "dovima";
 
 describe("jsonApiModelFormatter", () => {
-	class User extends Model {}
+	class User extends Model {
+		associate() {
+			this.hasMany("posts", Post);
+			this.hasOne("address", Address);
+		}
+	}
+
+	class Address extends Model {}
+
+	class Post extends Model {
+		associate() {
+			this.belongsTo("user", User);
+		}
+	}
 
 	let user,
 		userAttributes;
@@ -36,6 +49,69 @@ describe("jsonApiModelFormatter", () => {
 		() => {
 			jsonApiModelFormatter(userAttributes);
 		}.should.throw("The object provided to be formatted as json is not a dovima Model / Collection.");
+	});
+
+	describe("(relationships)", () => {
+		let post;
+
+		describe("(hasMany)", () => {
+			beforeEach(() => {
+				post = new Post({"id": 23});
+				user.posts.push(post);
+			});
+
+			it("it should include a relationships object", () => {
+				jsonApiModelFormatter(user).should.have.property("relationships");
+			});
+
+			it("it should include the type on the relationships object", () => {
+				jsonApiModelFormatter(user).relationships[0].should.have.property("type");
+			});
+
+			it("it should include the right type on the relationships object", () => {
+				jsonApiModelFormatter(user).relationships[0].type.should.equal("post");
+			});
+
+			it("it should include the id on the relationships object", () => {
+				jsonApiModelFormatter(user).relationships[0].should.have.property("id");
+			});
+		});
+
+		describe("(hasOne)", () => {
+			let address;
+
+			beforeEach(() => {
+				address = new Address();
+				user.address = address;
+			});
+
+			it("it should include a relationships object", () => {
+				jsonApiModelFormatter(user).should.have.property("relationships");
+			});
+
+			it("it should include the type on the relationships object", () => {
+				jsonApiModelFormatter(user).relationships[0].should.have.property("type");
+			});
+
+			it("it should include the right type on the relationships object", () => {
+				jsonApiModelFormatter(user).relationships[0].type.should.equal("address");
+			});
+
+			it("it should include the id on the relationships object", () => {
+				jsonApiModelFormatter(user).relationships[0].should.have.property("id");
+			});
+		});
+
+		describe("(belongsTo)", () => {
+			beforeEach(() => {
+				post = new Post({"id": 23});
+				post.user = user;
+			});
+
+			it("it should not have a relationships object", () => {
+				jsonApiModelFormatter(post).should.not.have.property("relationships");
+			});
+		});
 	});
 
 	describe("function object conflicts", () => {
