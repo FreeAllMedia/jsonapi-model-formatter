@@ -28,7 +28,46 @@ describe("jsonApiModelFormatter", function () {
 
 		_inherits(User, _Model);
 
+		_createClass(User, [{
+			key: "associate",
+			value: function associate() {
+				this.hasMany("posts", Post);
+				this.hasOne("address", Address);
+			}
+		}]);
+
 		return User;
+	})(_dovima2["default"]);
+
+	var Address = (function (_Model2) {
+		function Address() {
+			_classCallCheck(this, Address);
+
+			_get(Object.getPrototypeOf(Address.prototype), "constructor", this).apply(this, arguments);
+		}
+
+		_inherits(Address, _Model2);
+
+		return Address;
+	})(_dovima2["default"]);
+
+	var Post = (function (_Model3) {
+		function Post() {
+			_classCallCheck(this, Post);
+
+			_get(Object.getPrototypeOf(Post.prototype), "constructor", this).apply(this, arguments);
+		}
+
+		_inherits(Post, _Model3);
+
+		_createClass(Post, [{
+			key: "associate",
+			value: function associate() {
+				this.belongsTo("user", User);
+			}
+		}]);
+
+		return Post;
 	})(_dovima2["default"]);
 
 	var user = undefined,
@@ -63,6 +102,69 @@ describe("jsonApiModelFormatter", function () {
 		(function () {
 			(0, _libJsonApiModelFormatterJs2["default"])(userAttributes);
 		}).should["throw"]("The object provided to be formatted as json is not a dovima Model / Collection.");
+	});
+
+	describe("(relationships)", function () {
+		var post = undefined;
+
+		describe("(hasMany)", function () {
+			beforeEach(function () {
+				post = new Post({ "id": 23 });
+				user.posts.push(post);
+			});
+
+			it("it should include a relationships object", function () {
+				(0, _libJsonApiModelFormatterJs2["default"])(user).should.have.property("relationships");
+			});
+
+			it("it should include the type on the relationships object", function () {
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].should.have.property("type");
+			});
+
+			it("it should include the right type on the relationships object", function () {
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].type.should.equal("post");
+			});
+
+			it("it should include the id on the relationships object", function () {
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].should.have.property("id");
+			});
+		});
+
+		describe("(hasOne)", function () {
+			var address = undefined;
+
+			beforeEach(function () {
+				address = new Address();
+				user.address = address;
+			});
+
+			it("it should include a relationships object", function () {
+				(0, _libJsonApiModelFormatterJs2["default"])(user).should.have.property("relationships");
+			});
+
+			it("it should include the type on the relationships object", function () {
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].should.have.property("type");
+			});
+
+			it("it should include the right type on the relationships object", function () {
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].type.should.equal("address");
+			});
+
+			it("it should include the id on the relationships object", function () {
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].should.have.property("id");
+			});
+		});
+
+		describe("(belongsTo)", function () {
+			beforeEach(function () {
+				post = new Post({ "id": 23 });
+				post.user = user;
+			});
+
+			it("it should not have a relationships object", function () {
+				(0, _libJsonApiModelFormatterJs2["default"])(post).should.not.have.property("relationships");
+			});
+		});
 	});
 
 	describe("function object conflicts", function () {
