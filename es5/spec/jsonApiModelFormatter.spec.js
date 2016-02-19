@@ -118,15 +118,15 @@ describe("jsonApiModelFormatter", function () {
 			});
 
 			it("it should include the type on the relationships object", function () {
-				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].should.have.property("type");
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships.posts.data[0].should.have.property("type");
 			});
 
 			it("it should include the right type on the relationships object", function () {
-				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].type.should.equal("post");
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships.posts.data[0].type.should.equal("post");
 			});
 
 			it("it should include the id on the relationships object", function () {
-				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].should.have.property("id");
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships.posts.data[0].should.have.property("id");
 			});
 		});
 
@@ -143,15 +143,15 @@ describe("jsonApiModelFormatter", function () {
 			});
 
 			it("it should include the type on the relationships object", function () {
-				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].should.have.property("type");
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships.address.data.should.have.property("type");
 			});
 
 			it("it should include the right type on the relationships object", function () {
-				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].type.should.equal("address");
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships.address.data.type.should.equal("address");
 			});
 
 			it("it should include the id on the relationships object", function () {
-				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships[0].should.have.property("id");
+				(0, _libJsonApiModelFormatterJs2["default"])(user).relationships.address.data.should.have.property("id");
 			});
 		});
 
@@ -205,6 +205,73 @@ describe("jsonApiModelFormatter", function () {
 
 			var apples = new Apples();
 			(0, _libJsonApiModelFormatterJs2["default"])(apples).should.eql([]);
+		});
+	});
+
+	describe("(parsing)", function () {
+		var Apple = (function (_Model4) {
+			function Apple() {
+				_classCallCheck(this, Apple);
+
+				_get(Object.getPrototypeOf(Apple.prototype), "constructor", this).apply(this, arguments);
+			}
+
+			_inherits(Apple, _Model4);
+
+			return Apple;
+		})(_dovima2["default"]);
+
+		describe("(one object)", function () {
+			it("should return a dovima model from a json api input", function () {
+				var input = { type: "apples", attributes: { name: "some" } };
+				(0, _libJsonApiModelFormatterJs2["default"])(input, Apple).should.be.instanceOf(Apple);
+			});
+
+			it("should return a model with the correct attributes", function () {
+				var attributes = { name: "some" };
+				var input = { type: "apples", attributes: attributes };
+				(0, _libJsonApiModelFormatterJs2["default"])(input, Apple).should.be.instanceOf(Apple);
+			});
+		});
+
+		describe("(an array)", function () {
+			var input = undefined;
+			var output = undefined;
+			var expectedOutput = undefined;
+
+			beforeEach(function () {
+				input = [{ type: "apples", attributes: { name: "some" } }, { type: "apples", attributes: { name: "second" } }];
+				output = (0, _libJsonApiModelFormatterJs2["default"])(input, Apple);
+				expectedOutput = [new Apple({ name: "some" }), new Apple({ name: "second" })];
+			});
+
+			it("should return an array", function () {
+				Array.isArray(output).should.be["true"];
+			});
+
+			it("should return dovima models from a json api input", function () {
+				output[0].should.be.instanceOf(Apple);
+			});
+
+			it("should return the correct attributes", function () {
+				output.should.eql(expectedOutput);
+			});
+		});
+
+		describe("(relationships)", function () {
+			it("should assign the id for a relationship", function () {
+				var input = { type: "apples", attributes: { name: "some" }, relationships: { "tree": { data: { type: "trees", id: "4" } } } };
+				(0, _libJsonApiModelFormatterJs2["default"])(input, Apple).treeId.should.equal("4");
+			});
+
+			it("should ignore an array relationship", function () {
+				// support for array relationships is complex and not needed yet
+				// because it needs to dig into the association related in the model to find the class to instantiate
+				var input = { type: "apples", attributes: { name: "some" }, relationships: { "tree": { data: [{ type: "trees", id: "4" }, { type: "trees", id: "5" }] } } };
+				(function () {
+					(0, _libJsonApiModelFormatterJs2["default"])(input, Apple);
+				}).should.not["throw"];
+			});
 		});
 	});
 });
