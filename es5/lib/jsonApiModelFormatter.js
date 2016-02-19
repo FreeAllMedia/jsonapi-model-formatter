@@ -22,7 +22,7 @@ function convertModel(model) {
 			var attributes = model.toJSON();
 			var id = attributes.id;
 			delete attributes.id; //so it's just on the root
-			var relationships = [];
+			var relationships = {};
 
 			if (model.associations) {
 				var associationNames = Object.keys(model.associations);
@@ -36,18 +36,22 @@ function convertModel(model) {
 							var associationValue = model[associationName];
 							delete attributes[associationName + "Id"];
 							if (associationId) {
-								relationships.push({ type: associationType, id: associationId });
+								relationships[associationName] = { data: { type: associationType, id: associationId } };
 							} else if (associationValue) {
-								relationships.push({ type: associationType, id: associationValue.id });
+								relationships[associationName] = { data: { type: associationType, id: associationValue.id } };
 							}
 						} else if (association.type === "hasMany") {
 							var associationValues = model[associationName];
 							if (associationValues.length > 0) {
-								associationValues.forEach(function (associationValue) {
-									if (associationValue.id) {
-										relationships.push({ type: associationType, id: associationValue.id });
-									}
-								});
+								(function () {
+									var currentRelationship = [];
+									associationValues.forEach(function (associationValue) {
+										if (associationValue.id) {
+											currentRelationship.push({ type: associationType, id: associationValue.id });
+										}
+									});
+									relationships[associationName] = { data: currentRelationship };
+								})();
 							}
 						}
 					}
@@ -60,7 +64,7 @@ function convertModel(model) {
 				attributes: attributes
 			};
 
-			if (relationships.length > 0) {
+			if (Object.keys(relationships).length > 0) {
 				result.relationships = relationships;
 			}
 
@@ -75,13 +79,44 @@ function convertModel(model) {
 	}
 }
 
-function JsonApiModelFormatter(models) {
-	if (Array.isArray(models) || models && models.length >= 0
-	//HACK: this is a temporal hack to work around version issues with dovima
-	 || models.constructor.name === "Collection") {
-		return models.map(convertModel);
+function parseObject(object, ModelClass) {
+	var newModel = new ModelClass(object.attributes);
+	if (object.relationships) {
+		Object.keys(object.relationships).forEach(function (relationshipKey) {
+			var relationship = object.relationships[relationshipKey];
+			if (relationship && relationship.data && relationship.data.id) {
+				var id = relationship.data.id;
+				newModel[relationshipKey + "Id"] = id;
+			}
+		});
+	}
+	return newModel;
+}
+
+function parse(object, ModelClass) {
+	if (Array.isArray(object)) {
+		return object.map(function (currentObject) {
+			return parseObject(currentObject, ModelClass);
+		});
 	} else {
-		return convertModel(models);
+		return parseObject(object, ModelClass);
+	}
+}
+
+function JsonApiModelFormatter() {
+	if (arguments.length === 1) {
+		var models = arguments[0];
+		if (Array.isArray(models) || models && models.length >= 0
+		//HACK: this is a temporal hack to work around version issues with dovima
+		 || models.constructor.name === "Collection") {
+			return models.map(convertModel);
+		} else {
+			return convertModel(models);
+		}
+	} else if (arguments.length === 2) {
+		var object = arguments[0];
+		var modelClass = arguments[1];
+		return parse(object, modelClass);
 	}
 }
 

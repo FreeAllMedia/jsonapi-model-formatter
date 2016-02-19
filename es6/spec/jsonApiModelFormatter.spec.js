@@ -65,15 +65,15 @@ describe("jsonApiModelFormatter", () => {
 			});
 
 			it("it should include the type on the relationships object", () => {
-				jsonApiModelFormatter(user).relationships[0].should.have.property("type");
+				jsonApiModelFormatter(user).relationships.posts.data[0].should.have.property("type");
 			});
 
 			it("it should include the right type on the relationships object", () => {
-				jsonApiModelFormatter(user).relationships[0].type.should.equal("post");
+				jsonApiModelFormatter(user).relationships.posts.data[0].type.should.equal("post");
 			});
 
 			it("it should include the id on the relationships object", () => {
-				jsonApiModelFormatter(user).relationships[0].should.have.property("id");
+				jsonApiModelFormatter(user).relationships.posts.data[0].should.have.property("id");
 			});
 		});
 
@@ -90,15 +90,15 @@ describe("jsonApiModelFormatter", () => {
 			});
 
 			it("it should include the type on the relationships object", () => {
-				jsonApiModelFormatter(user).relationships[0].should.have.property("type");
+				jsonApiModelFormatter(user).relationships.address.data.should.have.property("type");
 			});
 
 			it("it should include the right type on the relationships object", () => {
-				jsonApiModelFormatter(user).relationships[0].type.should.equal("address");
+				jsonApiModelFormatter(user).relationships.address.data.type.should.equal("address");
 			});
 
 			it("it should include the id on the relationships object", () => {
-				jsonApiModelFormatter(user).relationships[0].should.have.property("id");
+				jsonApiModelFormatter(user).relationships.address.data.should.have.property("id");
 			});
 		});
 
@@ -133,5 +133,63 @@ describe("jsonApiModelFormatter", () => {
 			const apples = new Apples();
 			jsonApiModelFormatter(apples).should.eql([]);
 		});
+	});
+
+	describe("(parsing)", () => {
+		class Apple extends Model {}
+
+		describe("(one object)", () => {
+			it("should return a dovima model from a json api input", () => {
+				const input = { type: "apples", attributes: { name: "some" } };
+				jsonApiModelFormatter(input, Apple).should.be.instanceOf(Apple);
+			});
+
+			it("should return a model with the correct attributes", () => {
+				const attributes = { name: "some" };
+				const input = { type: "apples", attributes };
+				jsonApiModelFormatter(input, Apple).should.be.instanceOf(Apple);
+			});
+		});
+
+		describe("(an array)", () => {
+			let input;
+			let output;
+			let expectedOutput;
+
+			beforeEach(() => {
+				input = [{ type: "apples", attributes: { name: "some" } }, { type: "apples", attributes: { name: "second" } }];
+				output = jsonApiModelFormatter(input, Apple);
+				expectedOutput = [new Apple({name: "some"}), new Apple({name: "second"})];
+			});
+
+			it("should return an array", () => {
+				Array.isArray(output).should.be.true;
+			});
+
+			it("should return dovima models from a json api input", () => {
+				output[0].should.be.instanceOf(Apple);
+			});
+
+			it("should return the correct attributes", () => {
+				output.should.eql(expectedOutput);
+			});
+		});
+
+		describe("(relationships)", () => {
+			it("should assign the id for a relationship", () => {
+				const input = { type: "apples", attributes: { name: "some" }, relationships: { "tree": { data: { type: "trees", id: "4" } } } };
+				jsonApiModelFormatter(input, Apple).treeId.should.equal("4");
+			});
+
+			it("should ignore an array relationship", () => {
+				// support for array relationships is complex and not needed yet
+				// because it needs to dig into the association related in the model to find the class to instantiate
+				const input = { type: "apples", attributes: { name: "some" }, relationships: { "tree": { data: [{ type: "trees", id: "4" }, { type: "trees", id: "5" }] } } };
+				(() => {
+					jsonApiModelFormatter(input, Apple);
+				}).should.not.throw;
+			});
+		});
+
 	});
 });
